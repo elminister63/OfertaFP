@@ -7,22 +7,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.5/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Estilos personalizados para el cuerpo y efectos de "cristal" */
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
-            align-items: center;
+            align-items: center; 
             justify-content: center;
-            padding: 1rem; /* Ajustado para mejor visualización en varios dispositivos */
-            box-sizing: border-box; /* Asegurar que el padding no cause desbordamiento */
+            padding: 1rem; 
+            box-sizing: border-box; 
         }
         .glass-card {
             background: rgba(255, 255, 255, 0.1);
@@ -46,39 +46,20 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .table-hover:hover {
-            background: rgba(255, 255, 255, 0.05); /* Sutil hover para la tabla */
-            /* transform: scale(1.01); /* Puede ser mucho para filas de tabla */
+            background: rgba(255, 255, 255, 0.05);
             transition: background-color 0.2s ease;
         }
-        /* Estilos para el scrollbar en tablas */
-        .overflow-x-auto::-webkit-scrollbar {
-            height: 8px;
-        }
-        .overflow-x-auto::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-        .overflow-x-auto::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-        }
-        .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-        /* Estilo para que los inputs y selects en modo "glass" sean más legibles */
+        .overflow-x-auto::-webkit-scrollbar { height: 8px; }
+        .overflow-x-auto::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        .overflow-x-auto::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 10px; }
+        .overflow-x-auto::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
         select.glass-input, input.glass-input {
             background-color: rgba(255, 255, 255, 0.2) !important;
             border: 1px solid rgba(255, 255, 255, 0.3) !important;
             color: white !important;
         }
-        select.glass-input option {
-            background-color: #3730a3; /* Un fondo oscuro para las opciones del select */
-            color: white;
-        }
-        ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
-            color: rgba(229, 231, 235, 0.7) !important; /* Tailwind gray-300 with opacity */
-            opacity: 1; /* Firefox */
-        }
+        select.glass-input option { background-color: #3730a3; color: white; }
+        ::placeholder { color: rgba(229, 231, 235, 0.7) !important; opacity: 1; }
     </style>
 </head>
 <body>
@@ -87,39 +68,22 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
         
-        // Helper component to render Lucide icons correctly
-        // This component uses window.lucide.toSvg to generate SVG strings
-        const Icon = ({ name, size, className = "" }) => {
-            // name: Icon name (e.g., "Download", "Users")
-            // size: Pixel value for width and height (e.g., 16 for 1rem, 32 for 2rem)
-            // className: Tailwind classes for styling (color, margin, etc.)
-            
-            const iconPixelSize = typeof size === 'number' ? size : 24; // Default to 24px if size not specified
+        // Componente de Icono para Font Awesome
+        const IconFA = ({ name, pixelSize, className = "", type = "fas" }) => {
+            // name: nombre del icono de Font Awesome (ej: "edit", "trash-alt", "plus")
+            // pixelSize: tamaño numérico en píxeles, se aplicará como font-size.
+            // className: clases adicionales de Tailwind u otras
+            // type: "fas" (solid), "far" (regular), "fal" (light), "fab" (brands) - fas es un buen default
 
-            const attributes = {
-                width: iconPixelSize,
-                height: iconPixelSize,
-                'stroke-width': "2", // Default Lucide stroke width
-                stroke: "currentColor", // Inherit color from parent text color
-            };
+            const fullIconClass = `${type} fa-${name}`;
+            const style = pixelSize ? { fontSize: `${pixelSize}px` } : {};
 
-            if (window.lucide && typeof window.lucide.toSvg === 'function') {
-                try {
-                    const svgString = window.lucide.toSvg(name, attributes);
-                    // The span acts as a container. Apply className to this span.
-                    return <span className={`${className} inline-flex items-center justify-center`} dangerouslySetInnerHTML={{ __html: svgString }} />;
-                } catch (e) {
-                    console.warn(`Lucide icon "${name}" (size ${iconPixelSize}px) could not be generated:`, e);
-                    // Fallback: render a question mark, respecting the className for layout/color
-                    return <span className={`${className} inline-flex items-center justify-center`}>?</span>;
-                }
-            }
-            console.warn(`Lucide library or toSvg function not found for icon "${name}".`);
-            return <span className={`${className} inline-flex items-center justify-center`}>?</span>;
+            // Usamos un span para que Tailwind pueda aplicar color más fácilmente si es necesario
+            // y para mantener la consistencia si se añaden más estilos al wrapper.
+            return <span className={className} style={style}><i className={fullIconClass}></i></span>;
         };
 
-
-        // Datos de ejemplo iniciales (simulando una base de datos local)
+        // Datos de ejemplo iniciales
         const initialData = [
             { id_registro: 1, CuAcadem: "08/09", Cod_centro: "BADAJOZ-COLEGIO SOPEÑA-BADAJOZ", Id_ciclo: "COM32-Gestión Comercial y Marketing", Grupos: 1, Por_grupo: 23, Curso: 1, Turno: "M", Total: 23, ClaveCicloOferta: "COM32", ClaveEnse: "06000711COM32M" },
             { id_registro: 2, CuAcadem: "08/09", Cod_centro: "BADAJOZ-COLEGIO SOPEÑA-BADAJOZ", Id_ciclo: "IMP23-Peluquería", Grupos: 1, Por_grupo: 27, Curso: 1, Turno: "M", Total: 27, ClaveCicloOferta: "IMP23", ClaveEnse: "06000711IMP23M" },
@@ -129,7 +93,6 @@
             { id_registro: 6, CuAcadem: "10/11", Cod_centro: "MÉRIDA-IES SANTA EULALIA-MÉRIDA", Id_ciclo: "SAN21-Cuidados Auxiliares de Enfermería", Grupos: 3, Por_grupo: 22, Curso: 1, Turno: "M", Total: 66, ClaveCicloOferta: "SAN21", ClaveEnse: "06000501SAN21M" }
         ];
 
-        // Componente de Modal de Mensaje personalizado
         const MessageModal = ({ message, type, onClose, onConfirm }) => {
             const typeConfig = {
                 error: { title: 'Error', colorClass: 'text-red-100', buttonClass: 'bg-red-600 hover:bg-red-700' },
@@ -170,7 +133,7 @@
             const [currentView, setCurrentView] = useState('table');
             const [filters, setFilters] = useState({ centro: '', ciclo: '', curso: '', anioAcademico: '' });
             const [editingItem, setEditingItem] = useState(null);
-            const [showModal, setShowModal] = useState(false); // For CRUD modal
+            const [showModal, setShowModal] = useState(false);
             const fileInputRef = useRef(null);
             const [messageModal, setMessageModal] = useState({ show: false, message: '', type: 'info', onConfirm: null });
 
@@ -216,7 +179,7 @@
                 };
                 if (file.name.endsWith('.json')) reader.readAsText(file);
                 else reader.readAsBinaryString(file);
-                event.target.value = null; // Reset file input
+                event.target.value = null; 
             };
 
             const exportToExcel = () => {
@@ -245,41 +208,26 @@
                 ]);
                 doc.autoTable({
                     head: [['Año Acad.', 'Centro', 'Ciclo', 'Curso', 'Grupos', 'Por Grupo', 'Total', 'Turno']],
-                    body: tableData,
-                    startY: 30,
-                    styles: { fontSize: 7, cellPadding: 1.5, overflow: 'linebreak' },
+                    body: tableData, startY: 30, styles: { fontSize: 7, cellPadding: 1.5, overflow: 'linebreak' },
                     columnStyles: {
-                        0: { cellWidth: 18 }, // Año Acad.
-                        1: { cellWidth: 55 }, // Centro
-                        2: { cellWidth: 55 }, // Ciclo
-                        3: { cellWidth: 12 }, // Curso
-                        4: { cellWidth: 15 }, // Grupos
-                        5: { cellWidth: 20 }, // Por Grupo
-                        6: { cellWidth: 12 }, // Total
-                        7: { cellWidth: 12 }  // Turno
+                        0: { cellWidth: 18 }, 1: { cellWidth: 55 }, 2: { cellWidth: 55 }, 3: { cellWidth: 12 },
+                        4: { cellWidth: 15 }, 5: { cellWidth: 20 }, 6: { cellWidth: 12 }, 7: { cellWidth: 12 }
                     },
-                    didDrawPage: function (data) { // Footer with page numbers
-                        doc.setFontSize(10);
-                        doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10);
-                    }
+                    didDrawPage: (data) => { doc.setFontSize(10); doc.text('Página ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10); }
                 });
                 doc.save('informe_oferta_educativa.pdf');
             };
 
-            const handleEdit = (item) => {
-                setEditingItem({ ...item });
-                setShowModal(true);
-            };
+            const handleEdit = (item) => { setEditingItem({ ...item }); setShowModal(true); };
             
             const handleDelete = (id_registro) => {
                 setMessageModal({
-                    show: true,
-                    message: '¿Estás seguro de que quieres eliminar este registro?',
-                    type: 'confirm',
+                    show: true, message: '¿Estás seguro de que quieres eliminar este registro?', type: 'confirm',
                     onConfirm: () => {
                         setData(data.filter(item => item.id_registro !== id_registro));
-                        setMessageModal({ show: true, message: 'Registro eliminado.', type: 'info' });
-                    }
+                        setMessageModal({ show: true, message: 'Registro eliminado.', type: 'info', onConfirm: null });
+                    },
+                    onClose: () => { setMessageModal({ show: false, message: '', type: 'info', onConfirm: null });}
                 });
             };
 
@@ -290,11 +238,8 @@
                 }
                 const calculatedTotal = (parseInt(editingItem.Grupos, 10) || 0) * (parseInt(editingItem.Por_grupo, 10) || 0);
                 const itemToSave = { 
-                    ...editingItem, 
-                    Grupos: parseInt(editingItem.Grupos, 10) || 0,
-                    Por_grupo: parseInt(editingItem.Por_grupo, 10) || 0,
-                    Curso: parseInt(editingItem.Curso, 10) || 1,
-                    Total: calculatedTotal 
+                    ...editingItem, Grupos: parseInt(editingItem.Grupos, 10) || 0, Por_grupo: parseInt(editingItem.Por_grupo, 10) || 0,
+                    Curso: parseInt(editingItem.Curso, 10) || 1, Total: calculatedTotal 
                 };
 
                 if (itemToSave.id_registro) {
@@ -305,8 +250,7 @@
                     setData([...data, { ...itemToSave, id_registro: newId }]);
                     setMessageModal({ show: true, message: 'Registro creado.', type: 'info' });
                 }
-                setShowModal(false);
-                setEditingItem(null);
+                setShowModal(false); setEditingItem(null);
             };
 
             const handleCreate = () => {
@@ -318,22 +262,19 @@
             };
 
             const getStats = () => {
-                const relevantData = filteredData.length > 0 ? filteredData : data; // Use all data if filter is empty
+                const relevantData = filteredData.length > 0 ? filteredData : data; 
                 const totalAlumnos = relevantData.reduce((sum, item) => sum + (item.Total || 0), 0);
                 const totalGrupos = relevantData.reduce((sum, item) => sum + (item.Grupos || 0), 0);
                 const centrosUnicos = new Set(relevantData.map(item => item.Cod_centro)).size;
                 const ciclosUnicos = new Set(relevantData.map(item => item.ClaveCicloOferta)).size;
                 return { totalAlumnos, totalGrupos, centrosUnicos, ciclosUnicos };
             };
-            const stats = getStats(); // Recalculate on each render, consider useMemo for larger datasets
-
+            const stats = getStats(); 
             const uniqueAnios = Array.from(new Set(data.map(item => item.CuAcadem))).sort();
             const uniqueCursos = Array.from(new Set(data.map(item => item.Curso))).sort((a,b) => a-b);
 
-
             return (
-                <div className="min-h-screen w-full flex flex-col items-center p-2 md:p-4"> {/* Removed justify-center to allow scrolling */}
-                    {/* Header */}
+                <div className="min-h-screen w-full flex flex-col items-center p-2 md:p-4">
                     <div className="glass-card rounded-2xl p-4 md:p-6 mb-6 w-full animate-fade-in">
                         <div className="flex flex-col md:flex-row justify-between items-center">
                             <div>
@@ -342,66 +283,63 @@
                             </div>
                             <div className="flex gap-2 mt-3 md:mt-0">
                                 <button onClick={() => setCurrentView('table')} className={`px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 text-sm ${currentView === 'table' ? 'bg-white text-purple-600 shadow-lg' : 'bg-white/20 text-white hover:bg-white/30'}`}>
-                                    <Icon name="FileText" size={16} />Tabla
+                                    <IconFA name="file-alt" pixelSize={16} className="mr-1" />Tabla
                                 </button>
                                 <button onClick={() => setCurrentView('stats')} className={`px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 text-sm ${currentView === 'stats' ? 'bg-white text-purple-600 shadow-lg' : 'bg-white/20 text-white hover:bg-white/30'}`}>
-                                    <Icon name="BarChart3" size={16} />Estadísticas
+                                    <IconFA name="chart-bar" pixelSize={16} className="mr-1" />Estadísticas
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Stats Cards (Visible in both views for now, or conditionally render based on currentView) */}
                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 w-full">
                         <div className="glass-card rounded-xl p-4 text-center animate-fade-in">
-                            <Icon name="Users" size={32} className="text-blue-300 mx-auto mb-2" />
+                            <IconFA name="users" pixelSize={32} className="text-blue-300 mx-auto mb-2" />
                             <div className="text-2xl font-bold text-white">{stats.totalAlumnos}</div>
                             <div className="text-blue-100 text-xs">Total Alumnos</div>
                         </div>
                         <div className="glass-card rounded-xl p-4 text-center animate-fade-in">
-                            <Icon name="GraduationCap" size={32} className="text-green-300 mx-auto mb-2" />
+                            <IconFA name="graduation-cap" pixelSize={32} className="text-green-300 mx-auto mb-2" />
                             <div className="text-2xl font-bold text-white">{stats.totalGrupos}</div>
                             <div className="text-blue-100 text-xs">Total Grupos</div>
                         </div>
                         <div className="glass-card rounded-xl p-4 text-center animate-fade-in">
-                            <Icon name="FileText" size={32} className="text-yellow-300 mx-auto mb-2" /> {/* Changed icon for variety */}
+                            <IconFA name="building-columns" pixelSize={32} className="text-yellow-300 mx-auto mb-2" /> 
                             <div className="text-2xl font-bold text-white">{stats.centrosUnicos}</div>
                             <div className="text-blue-100 text-xs">Centros Únicos</div>
                         </div>
                         <div className="glass-card rounded-xl p-4 text-center animate-fade-in">
-                            <Icon name="Library" size={32} className="text-purple-300 mx-auto mb-2" /> {/* Changed icon for variety */}
+                            <IconFA name="book-reader" pixelSize={32} className="text-purple-300 mx-auto mb-2" /> 
                             <div className="text-2xl font-bold text-white">{stats.ciclosUnicos}</div>
                             <div className="text-blue-100 text-xs">Tipos de Ciclo</div>
                         </div>
                     </div>
 
-
-                    {/* Controls and Filters */}
                     <div className="glass-card rounded-2xl p-4 md:p-6 mb-6 w-full animate-fade-in">
                         <div className="flex flex-col lg:flex-row gap-4 items-center justify-between mb-4">
                              <div className="flex gap-2 flex-wrap justify-center lg:justify-start">
                                 <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".json,.xlsx,.xls" className="hidden"/>
                                 <button onClick={() => fileInputRef.current?.click()} className="btn-primary text-white px-3 py-2 text-sm rounded-lg flex items-center gap-2 hover:scale-105 transition-transform">
-                                    <Icon name="Upload" size={16} /> Importar
+                                    <IconFA name="upload" pixelSize={16} className="mr-1" /> Importar
                                 </button>
                                 <button onClick={handleCreate} className="btn-primary text-white px-3 py-2 text-sm rounded-lg flex items-center gap-2 hover:scale-105 transition-transform">
-                                    <Icon name="Plus" size={16} /> Nuevo
+                                    <IconFA name="plus" pixelSize={16} className="mr-1" /> Nuevo
                                 </button>
                                 <button onClick={exportToExcel} className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 text-sm rounded-lg flex items-center gap-2 hover:scale-105 transition-transform">
-                                    <Icon name="Download" size={16} /> Excel
+                                    <IconFA name="file-excel" pixelSize={16} className="mr-1" /> Excel
                                 </button>
                                 <button onClick={exportToPDF} className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 text-sm rounded-lg flex items-center gap-2 hover:scale-105 transition-transform">
-                                    <Icon name="Download" size={16} /> PDF
+                                    <IconFA name="file-pdf" pixelSize={16} className="mr-1" /> PDF
                                 </button>
                             </div>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                             <div className="relative">
-                                <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200" />
+                                <IconFA name="search" pixelSize={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200" />
                                 <input type="text" placeholder="Filtrar por centro..." value={filters.centro} onChange={(e) => setFilters({...filters, centro: e.target.value})} className="glass-input pl-9 pr-3 py-2 w-full text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-gray-300" />
                             </div>
                              <div className="relative">
-                                <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200" />
+                                <IconFA name="search" pixelSize={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-200" />
                                 <input type="text" placeholder="Filtrar por ciclo..." value={filters.ciclo} onChange={(e) => setFilters({...filters, ciclo: e.target.value})} className="glass-input pl-9 pr-3 py-2 w-full text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-gray-300" />
                             </div>
                             <select value={filters.anioAcademico} onChange={(e) => setFilters({...filters, anioAcademico: e.target.value})} className="glass-input px-3 py-2 w-full text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400">
@@ -415,7 +353,6 @@
                         </div>
                     </div>
 
-                    {/* Main Content Area */}
                     {currentView === 'table' && (
                         <div className="glass-card rounded-2xl p-2 md:p-4 animate-fade-in w-full">
                             <div className="overflow-x-auto">
@@ -440,8 +377,8 @@
                                                     <td className="p-3 text-center">{item.Total}</td>
                                                     <td className="p-3 text-center">{item.Turno}</td>
                                                     <td className="p-3 whitespace-nowrap">
-                                                        <button onClick={() => handleEdit(item)} className="text-blue-300 hover:text-blue-100 mr-2 p-1"><Icon name="Edit" size={18}/></button>
-                                                        <button onClick={() => handleDelete(item.id_registro)} className="text-red-400 hover:text-red-200 p-1"><Icon name="Trash2" size={18}/></button>
+                                                        <button onClick={() => handleEdit(item)} className="text-blue-300 hover:text-blue-100 mr-2 p-1"><IconFA name="edit" pixelSize={18}/></button>
+                                                        <button onClick={() => handleDelete(item.id_registro)} className="text-red-400 hover:text-red-200 p-1"><IconFA name="trash-alt" pixelSize={18}/></button>
                                                     </td>
                                                 </tr>
                                             ))
@@ -461,7 +398,6 @@
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="glass-card rounded-lg p-4">
                                     <h3 className="font-semibold text-lg text-purple-200 mb-2">Alumnos por Año Académico</h3>
-                                    {/* Aquí iría una visualización o tabla, por ejemplo: */}
                                     <ul className="text-sm text-gray-100 list-disc list-inside">
                                         {Object.entries(filteredData.reduce((acc, item) => { acc[item.CuAcadem] = (acc[item.CuAcadem] || 0) + item.Total; return acc; }, {})).map(([year, total]) => (
                                             <li key={year}>{year}: {total} alumnos</li>
@@ -472,74 +408,63 @@
                                     <h3 className="font-semibold text-lg text-green-200 mb-2">Grupos por Centro (Top 5)</h3>
                                     <ul className="text-sm text-gray-100 list-disc list-inside">
                                         {Object.entries(filteredData.reduce((acc, item) => { acc[item.Cod_centro] = (acc[item.Cod_centro] || 0) + item.Grupos; return acc; }, {})).sort(([,a],[,b]) => b-a).slice(0,5).map(([centro, grupos]) => (
-                                            <li key={centro} className="truncate" title={centro}>{centro.split('-')[1] || centro}: {grupos} grupos</li>
+                                            <li key={centro} className="truncate" title={centro}>{(centro.split('-')[1] || centro).substring(0,30) + (centro.length > 30 ? '...' : '')}: {grupos} grupos</li>
                                         ))}
                                     </ul>
                                 </div>
-                                {/* Añadir más visualizaciones estadísticas según sea necesario */}
                             </div>
                         </div>
                     )}
 
-
-                    {/* Modal for Creating/Editing Items */}
                     {showModal && editingItem && (
                         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                             <div className="glass-card rounded-xl p-6 w-full max-w-lg animate-fade-in text-white">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-bold">{editingItem.id_registro ? 'Editar' : 'Nuevo'} Registro</h2>
-                                    <button onClick={() => { setShowModal(false); setEditingItem(null); }} className="text-gray-300 hover:text-white">
-                                        <Icon name="X" size={24} />
-                                    </button>
+                                <h3 className="text-xl font-bold mb-6 text-center">{editingItem.id_registro ? 'Editar' : 'Crear'} Registro</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
+                                    {Object.keys(editingItem).filter(key => key !== 'id_registro' && key !== 'Total' && key !== 'ClaveEnse' && key !== 'ClaveCicloOferta').map(key => (
+                                        <div key={key}>
+                                            <label htmlFor={key} className="block mb-1 font-medium text-blue-100 capitalize">{key.replace(/_/g, ' ').replace('CuAcadem', 'Año Académico').replace('Cod centro', 'Código Centro').replace('Id ciclo', 'Ciclo Formativo')}:</label>
+                                            {key === 'Turno' ? (
+                                                <select id={key} name={key} value={editingItem[key]} onChange={(e) => setEditingItem({ ...editingItem, [key]: e.target.value })}
+                                                    className="glass-input w-full p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400">
+                                                    <option value="M">Mañana</option> <option value="T">Tarde</option> <option value="N">Nocturno</option>
+                                                </select>
+                                            ) : key === 'Curso' ? (
+                                                <select id={key} name={key} type="number" value={editingItem[key]} onChange={(e) => setEditingItem({ ...editingItem, [key]: parseInt(e.target.value,10) || 1 })}
+                                                    className="glass-input w-full p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400">
+                                                    <option value="1">1</option> <option value="2">2</option> <option value="3">3</option>
+                                                </select>
+                                            ) : (
+                                                <input type={key === 'Grupos' || key === 'Por_grupo' ? 'number' : 'text'} id={key} name={key} value={editingItem[key]}
+                                                    onChange={(e) => setEditingItem({ ...editingItem, [key]: (key === 'Grupos' || key === 'Por_grupo') ? parseInt(e.target.value,10) : e.target.value })}
+                                                    className="glass-input w-full p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-gray-300"
+                                                    placeholder={key.replace(/_/g, ' ')} min={(key === 'Grupos' || key === 'Por_grupo' || key === 'Curso') ? 0 : undefined} />
+                                            )}
+                                        </div>
+                                    ))}
+                                    <div>
+                                      <label className="block mb-1 font-medium text-blue-100">Total Calculado:</label>
+                                      <p className="p-2 text-lg">{(parseInt(editingItem.Grupos,10) || 0) * (parseInt(editingItem.Por_grupo,10) || 0)}</p>
+                                    </div>
                                 </div>
-                                <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
-                                        {Object.keys(editingItem).filter(key => key !== 'id_registro' && key !== 'Total').map(key => (
-                                            <div key={key}>
-                                                <label htmlFor={key} className="block mb-1 font-medium text-purple-200">
-                                                    {key.replace(/_/g, ' ').replace('CuAcadem', 'Año Acad.').replace('Cod_centro', 'Centro').replace('Id_ciclo', 'Ciclo')}
-                                                </label>
-                                                {key === 'Turno' ? (
-                                                    <select id={key} value={editingItem[key]} onChange={(e) => setEditingItem({...editingItem, [key]: e.target.value})} className="glass-input w-full p-2 rounded-md focus:ring-purple-400">
-                                                        <option value="M">Mañana</option>
-                                                        <option value="T">Tarde</option>
-                                                        <option value="N">Noche</option>
-                                                    </select>
-                                                ) : key === 'Curso' || key === 'Grupos' || key === 'Por_grupo' ? (
-                                                    <input type="number" id={key} value={editingItem[key]} onChange={(e) => setEditingItem({...editingItem, [key]: e.target.value})} className="glass-input w-full p-2 rounded-md focus:ring-purple-400" min="0" />
-                                                ) : (
-                                                    <input type="text" id={key} value={editingItem[key]} onChange={(e) => setEditingItem({...editingItem, [key]: e.target.value})} className="glass-input w-full p-2 rounded-md focus:ring-purple-400" />
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="flex justify-end gap-3">
-                                        <button type="button" onClick={() => { setShowModal(false); setEditingItem(null); }} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold">Cancelar</button>
-                                        <button type="submit" className="btn-primary px-4 py-2 rounded-lg font-semibold">Guardar</button>
-                                    </div>
-                                </form>
+                                <div className="flex justify-end gap-3 mt-6">
+                                    <button onClick={() => { setShowModal(false); setEditingItem(null); }} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold transition-colors">Cancelar</button>
+                                    <button onClick={handleSave} className="btn-primary text-white px-4 py-2 rounded-lg font-semibold">Guardar</button>
+                                </div>
                             </div>
                         </div>
                     )}
-
-                    {/* Message Modal */}
+                    
                     {messageModal.show && (
-                        <MessageModal
-                            message={messageModal.message}
-                            type={messageModal.type}
-                            onClose={() => setMessageModal({ ...messageModal, show: false, onConfirm: null })}
-                            onConfirm={messageModal.onConfirm}
-                        />
+                        <MessageModal message={messageModal.message} type={messageModal.type}
+                            onClose={() => setMessageModal({ show: false, message: '', type: 'info', onConfirm: null })}
+                            onConfirm={messageModal.onConfirm} />
                     )}
                 </div>
             );
         }
 
-        // React 18 rendering
-        const container = document.getElementById('root');
-        const root = ReactDOM.createRoot(container);
-        root.render(<App />);
-
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
